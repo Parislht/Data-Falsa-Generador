@@ -1,0 +1,79 @@
+import csv
+import random
+from utils import guardar_csv
+
+def generar_datos_producto_venta(num_registros, archivo_venta, archivo_clientes, archivo_producto):
+    """
+    Genera una lista de diccionarios con los datos para la tabla Producto_Venta.
+    :param num_registros: Número de registros a generar.
+    :param archivo_venta: Ruta del archivo venta_{num_registros}.csv.
+    :param archivo_clientes: Ruta del archivo clientes_{num_registros}.csv.
+    :param archivo_producto: Ruta del archivo producto_{num_registros}.csv.
+    """
+    productos_venta = []
+
+    # Leer datos de la tabla Venta
+    with open(archivo_venta, "r") as file:
+        reader = csv.DictReader(file)
+        ids_venta = [row["ID_VENTA"] for row in reader]  # Extraer IDs de Venta en orden
+
+    # Leer datos de la tabla Clientes
+    with open(archivo_clientes, "r") as file:
+        reader = csv.DictReader(file)
+        ids_cliente = [row["DNI"] for row in reader]  # Extraer DNIs en orden
+
+    # Leer datos de la tabla Producto
+    with open(archivo_producto, "r") as file:
+        reader = csv.DictReader(file)
+        ids_producto = [row["ID_PRODUCTO"] for row in reader]  # Extraer IDs de Producto en orden
+
+    # Generar datos para Producto_Venta
+    for i in range(num_registros):
+        # ID_VENTA (extraído en orden)
+        id_venta = ids_venta[i % len(ids_venta)]
+
+        # ID_CLIENTE (extraído en orden)
+        id_cliente = ids_cliente[i % len(ids_cliente)]
+
+        # ID_PRODUCTO (extraído en orden)
+        id_producto = ids_producto[i % len(ids_producto)]
+
+        # Cantidad (número aleatorio entre 1 y 50)
+        cantidad = random.randint(1, 50)
+
+        # Agregar registro a la lista
+        productos_venta.append({
+            "ID_VENTA": id_venta,
+            "ID_CLIENTE": id_cliente,
+            "ID_PRODUCTO": id_producto,
+            "Cantidad": cantidad
+        })
+
+        # Mostrar progreso cada 100,000 registros
+        if len(productos_venta) % 100000 == 0:
+            print(f"{len(productos_venta)} registros generados para Producto_Venta...")
+
+    return productos_venta
+
+def crear_csv_producto_venta():
+    """Genera los archivos CSV para los contextos de la tabla Producto_Venta."""
+    # Rutas base de los archivos necesarios
+    archivo_venta_base = r"C:\Users\Paris Herrera\Desktop\bdProyecto\T_Venta\venta_{num_registros}.csv"
+    archivo_clientes_base = r"C:\Users\Paris Herrera\Desktop\bdProyecto\T_clientes\clientes_{num_registros}.csv"
+    archivo_producto_base = r"C:\Users\Paris Herrera\Desktop\bdProyecto\T_Producto\producto_{num_registros}.csv"
+
+    for num_registros in [1000, 10000, 100000, 1000000]:
+        # Rutas de los archivos para el contexto actual
+        archivo_venta = archivo_venta_base.format(num_registros=num_registros)
+        archivo_clientes = archivo_clientes_base.format(num_registros=num_registros)
+        archivo_producto = archivo_producto_base.format(num_registros=num_registros)
+
+        # Generar datos para Producto_Venta
+        datos_producto_venta = generar_datos_producto_venta(
+            num_registros, archivo_venta, archivo_clientes, archivo_producto
+        )
+
+        # Guardar los subconjuntos como archivos CSV
+        nombre_archivo = f"producto_venta_{num_registros}.csv"
+        guardar_csv(datos_producto_venta, nombre_archivo)
+        print(f"Archivo {nombre_archivo} generado con {num_registros} registros.")
